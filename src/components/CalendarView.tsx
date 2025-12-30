@@ -51,7 +51,10 @@ export const CalendarView = ({ logs }: CalendarViewProps) => {
     const activeDays: Date[] = [];
     
     dailyData.forEach((data, dateStr) => {
-      const date = new Date(dateStr);
+      // Parse date string parts to avoid timezone issues
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const date = new Date(year, month - 1, day); // month is 0-indexed
+      
       if (data.total >= 100) {
         goalDays.push(date);
       } else if (data.total > 0) {
