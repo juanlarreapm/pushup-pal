@@ -8,6 +8,7 @@ import { ProgressChart } from './ProgressChart';
 import { MotivationalQuote } from './MotivationalQuote';
 import { Button } from '@/components/ui/button';
 import { LogOut, Dumbbell } from 'lucide-react';
+import { ImportHistory } from './ImportHistory';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -92,14 +93,17 @@ export const Dashboard = () => {
               </p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleSignOut}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <LogOut className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <ImportHistory />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleSignOut}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </div>
         </header>
 
         {/* Daily Progress */}
