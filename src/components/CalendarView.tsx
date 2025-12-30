@@ -2,8 +2,12 @@ import { useState, useMemo } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { format, startOfDay, endOfDay } from 'date-fns';
-import { CalendarDays, Check, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { format, startOfDay } from 'date-fns';
+import { CalendarDays, Check, StickyNote, Pencil, Trash2, Save, X } from 'lucide-react';
+import { useDailyNotes } from '@/hooks/useDailyNotes';
+import { toast } from 'sonner';
 
 interface PushupLog {
   id: string;
@@ -18,6 +22,10 @@ interface CalendarViewProps {
 
 export const CalendarView = ({ logs }: CalendarViewProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [isEditingNote, setIsEditingNote] = useState(false);
+  const [noteContent, setNoteContent] = useState('');
+  
+  const { getNoteForDate, getDatesWithNotes, saveNote, deleteNote, isSaving, isDeleting } = useDailyNotes();
 
   // Group logs by day for quick lookup
   const dailyData = useMemo(() => {
@@ -45,15 +53,18 @@ export const CalendarView = ({ logs }: CalendarViewProps) => {
   const selectedDayTotal = selectedDayLogs.reduce((sum, log) => sum + log.reps, 0);
   const hitGoal = selectedDayTotal >= 100;
 
+  // Get note for selected date
+  const selectedDayNote = selectedDate ? getNoteForDate(selectedDate) : undefined;
+
   // Custom day content to show indicators
   const modifiers = useMemo(() => {
     const goalDays: Date[] = [];
     const activeDays: Date[] = [];
+    const noteDays = getDatesWithNotes();
     
     dailyData.forEach((data, dateStr) => {
-      // Parse date string parts to avoid timezone issues
       const [year, month, day] = dateStr.split('-').map(Number);
-      const date = new Date(year, month - 1, day); // month is 0-indexed
+      const date = new Date(year, month - 1, day);
       
       if (data.total >= 100) {
         goalDays.push(date);
@@ -62,8 +73,43 @@ export const CalendarView = ({ logs }: CalendarViewProps) => {
       }
     });
     
-    return { goalDays, activeDays };
-  }, [dailyData]);
+    return { goalDays, activeDays, noteDays };
+  }, [dailyData, getDatesWithNotes]);
+
+  const handleEditNote = () => {
+    setNoteContent(selectedDayNote?.content || '');
+    setIsEditingNote(true);
+  };
+
+  const handleSaveNote = async () => {
+    if (!selectedDate || !noteContent.trim()) return;
+    
+    try {
+      await saveNote({ date: selectedDate, content: noteContent.trim() });
+      setIsEditingNote(false);
+      toast.success('Note saved');
+    } catch (error) {
+      toast.error('Failed to save note');
+    }
+  };
+
+  const handleDeleteNote = async () => {
+    if (!selectedDate) return;
+    
+    try {
+      await deleteNote(selectedDate);
+      setIsEditingNote(false);
+      setNoteContent('');
+      toast.success('Note deleted');
+    } catch (error) {
+      toast.error('Failed to delete note');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingNote(false);
+    setNoteContent('');
+  };
 
   return (
     <Card className="bg-card/50 border-border/50">
@@ -77,15 +123,21 @@ export const CalendarView = ({ logs }: CalendarViewProps) => {
         <Calendar
           mode="single"
           selected={selectedDate}
-          onSelect={setSelectedDate}
+          onSelect={(date) => {
+            setSelectedDate(date);
+            setIsEditingNote(false);
+            setNoteContent('');
+          }}
           className="rounded-md border mx-auto pointer-events-auto"
           modifiers={{
             goal: modifiers.goalDays,
             active: modifiers.activeDays,
+            hasNote: modifiers.noteDays,
           }}
           modifiersClassNames={{
             goal: 'bg-primary/20 text-primary font-bold',
             active: 'bg-muted text-foreground',
+            hasNote: 'relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:bg-primary after:rounded-full',
           }}
         />
 
@@ -111,7 +163,7 @@ export const CalendarView = ({ logs }: CalendarViewProps) => {
                 <div className="flex flex-wrap gap-2">
                   {selectedDayLogs
                     .sort((a, b) => new Date(a.logged_at).getTime() - new Date(b.logged_at).getTime())
-                    .map((log, i) => (
+                    .map((log) => (
                       <div
                         key={log.id}
                         className="px-2 py-1 bg-muted rounded text-xs font-mono"
@@ -131,6 +183,79 @@ export const CalendarView = ({ logs }: CalendarViewProps) => {
                 </p>
               </div>
             )}
+
+            {/* Note Section */}
+            <div className="pt-2 border-t space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-sm font-medium">
+                  <StickyNote className="h-3.5 w-3.5 text-muted-foreground" />
+                  Note
+                </div>
+                {!isEditingNote && (
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2"
+                      onClick={handleEditNote}
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                    {selectedDayNote && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-destructive hover:text-destructive"
+                        onClick={handleDeleteNote}
+                        disabled={isDeleting}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {isEditingNote ? (
+                <div className="space-y-2">
+                  <Textarea
+                    value={noteContent}
+                    onChange={(e) => setNoteContent(e.target.value)}
+                    placeholder="Add a note for this day..."
+                    className="min-h-[80px] text-sm"
+                    autoFocus
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={handleSaveNote}
+                      disabled={isSaving || !noteContent.trim()}
+                      className="gap-1"
+                    >
+                      <Save className="h-3 w-3" />
+                      Save
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCancelEdit}
+                      className="gap-1"
+                    >
+                      <X className="h-3 w-3" />
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : selectedDayNote ? (
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  {selectedDayNote.content}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground italic">
+                  No note for this day
+                </p>
+              )}
+            </div>
           </div>
         )}
       </CardContent>
