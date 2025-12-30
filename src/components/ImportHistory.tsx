@@ -23,7 +23,7 @@ import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 
 export const ImportHistory = () => {
   const [open, setOpen] = useState(false);
@@ -138,9 +138,9 @@ export const ImportHistory = () => {
         )}
 
         {step === 'preview' && parseResult && (
-          <div className="space-y-4 flex-1 min-h-0 flex flex-col overflow-hidden">
+          <div className="flex flex-col gap-4 overflow-hidden">
             {/* Summary */}
-            <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="grid grid-cols-3 gap-2 text-center shrink-0">
               <div className="bg-muted/50 rounded-lg p-2">
                 <p className="text-lg font-bold text-primary">{parseResult.entries.length}</p>
                 <p className="text-xs text-muted-foreground">Days</p>
@@ -157,7 +157,7 @@ export const ImportHistory = () => {
 
             {/* Warnings */}
             {parseResult.warnings.length > 0 && (
-              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 space-y-1">
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 space-y-1 shrink-0">
                 <div className="flex items-center gap-2 text-destructive text-sm font-medium">
                   <AlertCircle className="h-4 w-4" />
                   {parseResult.warnings.length} line(s) couldn't be parsed
@@ -173,10 +173,10 @@ export const ImportHistory = () => {
               </div>
             )}
 
-            {/* Preview table */}
-            <ScrollArea className="flex-1 min-h-0 max-h-[40vh] border rounded-lg">
+            {/* Preview table - scrollable with fixed height */}
+            <div className="border rounded-lg overflow-auto h-[200px] sm:h-[250px]">
               <Table>
-                <TableHeader>
+                <TableHeader className="sticky top-0 bg-background z-10">
                   <TableRow>
                     <TableHead className="w-24">Date</TableHead>
                     <TableHead>Sets</TableHead>
@@ -209,7 +209,7 @@ export const ImportHistory = () => {
                   ))}
                 </TableBody>
               </Table>
-            </ScrollArea>
+            </div>
 
             {/* Actions */}
             <div className="flex gap-2">
