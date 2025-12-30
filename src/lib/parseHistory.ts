@@ -1,8 +1,13 @@
 import { parse, isValid, setYear, setHours, setMinutes, setSeconds } from 'date-fns';
 
+export interface ParsedSet {
+  reps: number;
+  variation: string | null; // null = Standard
+}
+
 export interface ParsedEntry {
   date: Date;
-  sets: number[];
+  sets: ParsedSet[];
   total: number;
   rawLine: string;
 }
@@ -54,10 +59,34 @@ function parseDate(dateStr: string): Date | null {
   return null;
 }
 
-function extractNumbers(str: string): number[] {
-  const matches = str.match(/\d+/g);
+// Map suffixes to variation names
+const VARIATION_MAP: Record<string, string> = {
+  'w': 'Weighted',
+  'd': 'Decline',
+  'i': 'Incline',
+  'x': 'Wide',
+  'm': 'Diamond',
+};
+
+function extractSetsWithVariations(str: string): ParsedSet[] {
+  // Match numbers optionally followed by a variation suffix (w, d, i, x, m)
+  const matches = str.match(/(\d+)([wdixm])?/gi);
   if (!matches) return [];
-  return matches.map(n => parseInt(n, 10)).filter(n => n > 0 && n <= 500);
+  
+  return matches
+    .map(match => {
+      const numMatch = match.match(/^(\d+)([wdixm])?$/i);
+      if (!numMatch) return null;
+      
+      const reps = parseInt(numMatch[1], 10);
+      if (reps <= 0 || reps > 500) return null;
+      
+      const suffix = numMatch[2]?.toLowerCase();
+      const variation = suffix ? VARIATION_MAP[suffix] || null : null;
+      
+      return { reps, variation };
+    })
+    .filter((set): set is ParsedSet => set !== null);
 }
 
 export function parseHistoryText(text: string): ParseResult {
@@ -86,15 +115,15 @@ export function parseHistoryText(text: string): ParseResult {
     }
 
     // Check if line is ONLY numbers (use current date)
-    const numbers = extractNumbers(trimmedLine);
+    const sets = extractSetsWithVariations(trimmedLine);
     const hasNoDatePattern = !trimmedLine.match(/\d{1,2}\/\d{1,2}/);
     
-    if (hasNoDatePattern && numbers.length > 0) {
+    if (hasNoDatePattern && sets.length > 0) {
       if (currentDate) {
         entries.push({
           date: currentDate,
-          sets: numbers,
-          total: numbers.reduce((a, b) => a + b, 0),
+          sets,
+          total: sets.reduce((a, b) => a + b.reps, 0),
           rawLine: `${currentDateStr}: ${trimmedLine}`,
         });
       } else {
@@ -112,8 +141,8 @@ export function parseHistoryText(text: string): ParseResult {
         continue;
       }
 
-      const sets = extractNumbers(dateMatch[2]);
-      if (sets.length === 0) {
+      const lineSets = extractSetsWithVariations(dateMatch[2]);
+      if (lineSets.length === 0) {
         // This might be a date-only line with separator
         currentDate = date;
         currentDateStr = dateMatch[1];
@@ -122,15 +151,15 @@ export function parseHistoryText(text: string): ParseResult {
 
       entries.push({
         date,
-        sets,
-        total: sets.reduce((a, b) => a + b, 0),
+        sets: lineSets,
+        total: lineSets.reduce((a, b) => a + b.reps, 0),
         rawLine: trimmedLine,
       });
       continue;
     }
 
     // Couldn't parse the line
-    if (numbers.length === 0) {
+    if (sets.length === 0) {
       warnings.push(`Could not parse line: "${trimmedLine}"`);
     }
   }
