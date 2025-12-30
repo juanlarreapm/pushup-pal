@@ -69,39 +69,41 @@ export const QuickAdd = ({ onAdd, isLoading }: QuickAddProps) => {
       </div>
 
       {/* Custom input */}
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => adjustCustom(-5)}
-          disabled={customReps <= 5}
-          className="h-14 w-14 text-lg"
-        >
-          <Minus className="h-5 w-5" />
-        </Button>
-        
-        <Input
-          type="number"
-          value={customReps}
-          onChange={(e) => setCustomReps(Math.max(1, parseInt(e.target.value) || 1))}
-          className="text-center font-mono text-2xl h-14 flex-1 bg-secondary text-foreground min-w-0"
-          min={1}
-        />
-        
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => adjustCustom(5)}
-          className="h-14 w-14 text-lg"
-        >
-          <Plus className="h-5 w-5" />
-        </Button>
+      <div className="grid grid-cols-[1fr_auto] gap-2">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => adjustCustom(-5)}
+            disabled={customReps <= 5}
+            className="h-14 w-14 shrink-0 text-lg"
+          >
+            <Minus className="h-5 w-5" />
+          </Button>
+          
+          <Input
+            type="number"
+            value={customReps}
+            onChange={(e) => setCustomReps(Math.max(1, parseInt(e.target.value) || 1))}
+            className="text-center font-mono text-2xl h-14 w-full bg-secondary text-foreground [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            min={1}
+          />
+          
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => adjustCustom(5)}
+            className="h-14 w-14 shrink-0 text-lg"
+          >
+            <Plus className="h-5 w-5" />
+          </Button>
+        </div>
 
         <Button
           onClick={handleCustomAdd}
           disabled={isLoading || customReps < 1}
           className={cn(
-            "h-14 px-5 font-semibold text-base",
+            "h-14 px-5 font-semibold text-base shrink-0",
             "bg-primary text-primary-foreground hover:bg-primary/90"
           )}
         >
