@@ -4,7 +4,7 @@ import { DailyProgress } from './DailyProgress';
 import { QuickAdd } from './QuickAdd';
 import { TodaySets } from './TodaySets';
 import { StatsCards } from './StatsCards';
-import { ProgressChart } from './ProgressChart';
+
 import { MotivationalQuote } from './MotivationalQuote';
 import { Button } from '@/components/ui/button';
 import { LogOut, Dumbbell } from 'lucide-react';
@@ -144,12 +144,6 @@ export const Dashboard = () => {
 
         {/* Calendar View */}
         <CalendarView logs={logs} />
-
-        {/* Progress Chart */}
-        <ProgressChart
-          weeklyData={weeklyData}
-          monthlyData={monthlyData}
-        />
       </div>
     </div>
   );
