@@ -61,60 +61,78 @@ function extractNumbers(str: string): number[] {
 }
 
 export function parseHistoryText(text: string): ParseResult {
-  const lines = text.split('\n').filter(line => line.trim());
+  const lines = text.split('\n');
   const entries: ParsedEntry[] = [];
   const warnings: string[] = [];
+  
+  let currentDate: Date | null = null;
+  let currentDateStr = '';
 
   for (const line of lines) {
     const trimmedLine = line.trim();
     if (!trimmedLine) continue;
 
-    // Try to find a date at the beginning of the line
-    // Common separators: : - | or just space before numbers
-    const separatorMatch = trimmedLine.match(/^([^:\-|0-9]+(?:\/\d+)?(?:\/\d+)?)\s*[:\-|]?\s*(.*)$/);
+    // Check if line is ONLY a date (no numbers)
+    const dateOnlyMatch = trimmedLine.match(/^(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)$/);
+    if (dateOnlyMatch) {
+      const date = parseDate(dateOnlyMatch[1]);
+      if (date) {
+        currentDate = date;
+        currentDateStr = dateOnlyMatch[1];
+      } else {
+        warnings.push(`Could not parse date: "${dateOnlyMatch[1]}"`);
+      }
+      continue;
+    }
+
+    // Check if line is ONLY numbers (use current date)
+    const numbers = extractNumbers(trimmedLine);
+    const hasNoDatePattern = !trimmedLine.match(/\d{1,2}\/\d{1,2}/);
     
-    let dateStr = '';
-    let numbersStr = '';
-
-    if (separatorMatch) {
-      dateStr = separatorMatch[1];
-      numbersStr = separatorMatch[2];
-    } else {
-      // Try to extract date from beginning
-      const dateMatch = trimmedLine.match(/^(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)\s*[:\-|]?\s*(.*)$/);
-      if (dateMatch) {
-        dateStr = dateMatch[1];
-        numbersStr = dateMatch[2];
-      }
-    }
-
-    if (!dateStr) {
-      // Maybe the whole line is just numbers for a date already set
-      const numbers = extractNumbers(trimmedLine);
-      if (numbers.length === 0) {
-        warnings.push(`Could not parse line: "${trimmedLine}"`);
+    if (hasNoDatePattern && numbers.length > 0) {
+      if (currentDate) {
+        entries.push({
+          date: currentDate,
+          sets: numbers,
+          total: numbers.reduce((a, b) => a + b, 0),
+          rawLine: `${currentDateStr}: ${trimmedLine}`,
+        });
+      } else {
+        warnings.push(`No date found for sets: "${trimmedLine}"`);
       }
       continue;
     }
 
-    const date = parseDate(dateStr);
-    if (!date) {
-      warnings.push(`Could not parse date: "${dateStr}" from line: "${trimmedLine}"`);
+    // Try single-line format: date and numbers on same line
+    const dateMatch = trimmedLine.match(/^(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)\s*[:\-|]?\s*(.*)$/);
+    if (dateMatch) {
+      const date = parseDate(dateMatch[1]);
+      if (!date) {
+        warnings.push(`Could not parse date: "${dateMatch[1]}" from line: "${trimmedLine}"`);
+        continue;
+      }
+
+      const sets = extractNumbers(dateMatch[2]);
+      if (sets.length === 0) {
+        // This might be a date-only line with separator
+        currentDate = date;
+        currentDateStr = dateMatch[1];
+        continue;
+      }
+
+      entries.push({
+        date,
+        sets,
+        total: sets.reduce((a, b) => a + b, 0),
+        rawLine: trimmedLine,
+      });
       continue;
     }
 
-    const sets = extractNumbers(numbersStr);
-    if (sets.length === 0) {
-      warnings.push(`No rep counts found in line: "${trimmedLine}"`);
-      continue;
+    // Couldn't parse the line
+    if (numbers.length === 0) {
+      warnings.push(`Could not parse line: "${trimmedLine}"`);
     }
-
-    entries.push({
-      date,
-      sets,
-      total: sets.reduce((a, b) => a + b, 0),
-      rawLine: trimmedLine,
-    });
   }
 
   // Sort by date
