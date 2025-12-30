@@ -84,7 +84,7 @@ export const QuickAdd = ({ onAdd, isLoading }: QuickAddProps) => {
           type="number"
           value={customReps}
           onChange={(e) => setCustomReps(Math.max(1, parseInt(e.target.value) || 1))}
-          className="text-center font-mono text-xl h-12 flex-1"
+          className="text-center font-mono text-xl h-12 flex-1 bg-secondary text-foreground"
           min={1}
         />
         
