@@ -138,7 +138,7 @@ export const ImportHistory = () => {
         )}
 
         {step === 'preview' && parseResult && (
-          <div className="space-y-4 flex-1 min-h-0 flex flex-col">
+          <div className="space-y-4 flex-1 min-h-0 flex flex-col overflow-hidden">
             {/* Summary */}
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="bg-muted/50 rounded-lg p-2">
@@ -174,7 +174,7 @@ export const ImportHistory = () => {
             )}
 
             {/* Preview table */}
-            <ScrollArea className="flex-1 border rounded-lg">
+            <ScrollArea className="flex-1 min-h-0 max-h-[40vh] border rounded-lg">
               <Table>
                 <TableHeader>
                   <TableRow>
