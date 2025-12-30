@@ -9,6 +9,7 @@ import { MotivationalQuote } from './MotivationalQuote';
 import { Button } from '@/components/ui/button';
 import { LogOut, Dumbbell } from 'lucide-react';
 import { ImportHistory } from './ImportHistory';
+import { VariationStats } from './VariationStats';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -23,17 +24,18 @@ export const Dashboard = () => {
     records,
     weeklyData,
     monthlyData,
+    variationStats,
     isLoading,
     addSet,
     deleteSet,
   } = usePushups();
   const { toast } = useToast();
 
-  const handleAddSet = async (reps: number) => {
+  const handleAddSet = async (reps: number, variation: string) => {
     try {
-      await addSet.mutateAsync(reps);
+      await addSet.mutateAsync({ reps, variation });
       toast({
-        title: `+${reps} pushups!`,
+        title: `+${reps} ${variation !== 'Standard' ? variation + ' ' : ''}pushups!`,
         description: todayTotal + reps >= 100 && todayTotal < 100 
           ? "🎉 You've hit your daily goal!" 
           : `${Math.max(0, 100 - todayTotal - reps)} more to go`,
@@ -134,6 +136,9 @@ export const Dashboard = () => {
           lifetimeTotal={lifetimeTotal}
           records={records}
         />
+
+        {/* Variation Stats */}
+        <VariationStats stats={variationStats} />
 
         {/* Progress Chart */}
         <ProgressChart

@@ -1,11 +1,14 @@
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface PushupLog {
   id: string;
   reps: number;
   logged_at: string;
+  variation?: string | null;
 }
 
 interface TodaySetsProps {
@@ -13,6 +16,14 @@ interface TodaySetsProps {
   onDelete: (id: string) => void;
   isDeleting?: boolean;
 }
+
+const variationColors: Record<string, string> = {
+  Weighted: 'bg-amber-500/20 text-amber-600 dark:text-amber-400',
+  Decline: 'bg-red-500/20 text-red-600 dark:text-red-400',
+  Incline: 'bg-blue-500/20 text-blue-600 dark:text-blue-400',
+  Wide: 'bg-green-500/20 text-green-600 dark:text-green-400',
+  Diamond: 'bg-purple-500/20 text-purple-600 dark:text-purple-400',
+};
 
 export const TodaySets = ({ logs, onDelete, isDeleting }: TodaySetsProps) => {
   if (logs.length === 0) {
@@ -39,6 +50,17 @@ export const TodaySets = ({ logs, onDelete, isDeleting }: TodaySetsProps) => {
               <span className="text-xs text-muted-foreground w-6">#{logs.length - index}</span>
               <span className="font-mono text-lg font-semibold">{log.reps}</span>
               <span className="text-sm text-muted-foreground">reps</span>
+              {log.variation && log.variation !== 'Standard' && (
+                <Badge 
+                  variant="secondary" 
+                  className={cn(
+                    "text-[10px] px-1.5 py-0 font-medium",
+                    variationColors[log.variation] || 'bg-muted text-muted-foreground'
+                  )}
+                >
+                  {log.variation}
+                </Badge>
+              )}
             </div>
             <div className="flex items-center gap-3">
               <span className="text-xs text-muted-foreground">

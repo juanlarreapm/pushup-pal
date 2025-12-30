@@ -8,6 +8,14 @@ interface PushupLog {
   reps: number;
   logged_at: string;
   created_at: string;
+  variation?: string | null;
+}
+
+interface VariationStats {
+  variation: string;
+  totalReps: number;
+  bestSet: number;
+  setCount: number;
 }
 
 export const usePushups = () => {
@@ -29,13 +37,17 @@ export const usePushups = () => {
 
   // Add a new set
   const addSet = useMutation({
-    mutationFn: async (reps: number) => {
+    mutationFn: async ({ reps, variation }: { reps: number; variation?: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       const { data, error } = await supabase
         .from('pushup_logs')
-        .insert({ user_id: user.id, reps })
+        .insert({ 
+          user_id: user.id, 
+          reps,
+          variation: variation === 'Standard' ? null : variation 
+        })
         .select()
         .single();
       
@@ -208,10 +220,30 @@ export const usePushups = () => {
     });
   };
 
+  // Variation stats
+  const calculateVariationStats = (): VariationStats[] => {
+    const statsMap: Map<string, { totalReps: number; bestSet: number; setCount: number }> = new Map();
+    
+    logs.forEach(log => {
+      const variation = log.variation || 'Standard';
+      const existing = statsMap.get(variation) || { totalReps: 0, bestSet: 0, setCount: 0 };
+      statsMap.set(variation, {
+        totalReps: existing.totalReps + log.reps,
+        bestSet: Math.max(existing.bestSet, log.reps),
+        setCount: existing.setCount + 1,
+      });
+    });
+
+    return Array.from(statsMap.entries())
+      .map(([variation, stats]) => ({ variation, ...stats }))
+      .sort((a, b) => b.totalReps - a.totalReps);
+  };
+
   const streak = calculateStreak();
   const records = calculateRecords();
   const weeklyData = getWeeklyData();
   const monthlyData = getMonthlyData();
+  const variationStats = calculateVariationStats();
 
   return {
     logs,
@@ -223,6 +255,7 @@ export const usePushups = () => {
     records,
     weeklyData,
     monthlyData,
+    variationStats,
     isLoading,
     addSet,
     deleteSet,

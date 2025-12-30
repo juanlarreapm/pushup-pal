@@ -5,22 +5,24 @@ import { Plus, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface QuickAddProps {
-  onAdd: (reps: number) => void;
+  onAdd: (reps: number, variation: string) => void;
   isLoading?: boolean;
 }
 
 const QUICK_VALUES = [10, 15, 20, 25];
+const VARIATIONS = ['Standard', 'Weighted', 'Decline', 'Incline', 'Wide', 'Diamond'] as const;
 
 export const QuickAdd = ({ onAdd, isLoading }: QuickAddProps) => {
   const [customReps, setCustomReps] = useState(20);
+  const [selectedVariation, setSelectedVariation] = useState<string>('Standard');
 
   const handleQuickAdd = (reps: number) => {
-    onAdd(reps);
+    onAdd(reps, selectedVariation);
   };
 
   const handleCustomAdd = () => {
     if (customReps > 0) {
-      onAdd(customReps);
+      onAdd(customReps, selectedVariation);
     }
   };
 
@@ -32,6 +34,24 @@ export const QuickAdd = ({ onAdd, isLoading }: QuickAddProps) => {
     <div className="rounded-2xl border border-border bg-card p-6">
       <h3 className="text-sm text-muted-foreground uppercase tracking-wider mb-4">Log a Set</h3>
       
+      {/* Variation selector */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {VARIATIONS.map(variation => (
+          <Button
+            key={variation}
+            variant={selectedVariation === variation ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedVariation(variation)}
+            className={cn(
+              "text-xs transition-colors",
+              selectedVariation === variation && "bg-primary text-primary-foreground"
+            )}
+          >
+            {variation}
+          </Button>
+        ))}
+      </div>
+
       {/* Quick add buttons */}
       <div className="grid grid-cols-4 gap-3 mb-6">
         {QUICK_VALUES.map(value => (
