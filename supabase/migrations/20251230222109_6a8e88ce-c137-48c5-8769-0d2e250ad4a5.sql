@@ -1,0 +1,1 @@
+ALTER TABLE public.pushup_logs ADD COLUMN variation text;
