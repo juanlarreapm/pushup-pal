@@ -69,22 +69,22 @@ export const QuickAdd = ({ onAdd, isLoading }: QuickAddProps) => {
       </div>
 
       {/* Custom input */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <Button
           variant="outline"
           size="icon"
           onClick={() => adjustCustom(-5)}
           disabled={customReps <= 5}
-          className="h-12 w-12"
+          className="h-14 w-14 text-lg"
         >
-          <Minus className="h-4 w-4" />
+          <Minus className="h-5 w-5" />
         </Button>
         
         <Input
           type="number"
           value={customReps}
           onChange={(e) => setCustomReps(Math.max(1, parseInt(e.target.value) || 1))}
-          className="text-center font-mono text-xl h-12 flex-1 bg-secondary text-foreground"
+          className="text-center font-mono text-2xl h-14 flex-1 bg-secondary text-foreground min-w-0"
           min={1}
         />
         
@@ -92,20 +92,20 @@ export const QuickAdd = ({ onAdd, isLoading }: QuickAddProps) => {
           variant="outline"
           size="icon"
           onClick={() => adjustCustom(5)}
-          className="h-12 w-12"
+          className="h-14 w-14 text-lg"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-5 w-5" />
         </Button>
 
         <Button
           onClick={handleCustomAdd}
           disabled={isLoading || customReps < 1}
           className={cn(
-            "h-12 px-6 font-semibold",
+            "h-14 px-5 font-semibold text-base",
             "bg-primary text-primary-foreground hover:bg-primary/90"
           )}
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="h-5 w-5 mr-1" />
           Add
         </Button>
       </div>
