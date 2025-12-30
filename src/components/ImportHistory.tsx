@@ -18,7 +18,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Upload, AlertCircle, Check, Loader2 } from 'lucide-react';
-import { parseHistoryText, ParseResult } from '@/lib/parseHistory';
+import { parseHistoryText, ParseResult, ParsedSet } from '@/lib/parseHistory';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -50,9 +50,10 @@ export const ImportHistory = () => {
 
       // Create all log entries
       const entries = parseResult.entries.flatMap(entry =>
-        entry.sets.map((reps, index) => ({
+        entry.sets.map((set, index) => ({
           user_id: user.id,
-          reps,
+          reps: set.reps,
+          variation: set.variation,
           // Stagger timestamps slightly so they appear in order
           logged_at: new Date(entry.date.getTime() + index * 60000).toISOString(),
         }))
@@ -116,8 +117,9 @@ export const ImportHistory = () => {
             <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-3 space-y-1">
               <p className="font-medium">Example formats:</p>
               <p>10/1: 20, 20, 30, 30</p>
-              <p>10/2 - 25, 25, 25, 25</p>
-              <p>Oct 3: 30 30 20 20</p>
+              <p>10/2: 25w-20-15w-10 <span className="opacity-70">(w=weighted)</span></p>
+              <p>10/3: 30-15d-20-10d <span className="opacity-70">(d=decline)</span></p>
+              <p className="opacity-70 mt-1">Suffixes: w=weighted, d=decline, i=incline, x=wide, m=diamond</p>
             </div>
             <Textarea
               placeholder="Paste your pushup history here..."
@@ -188,7 +190,17 @@ export const ImportHistory = () => {
                         {format(entry.date, 'M/d')}
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
-                        {entry.sets.join(', ')}
+                        {entry.sets.map((set, idx) => (
+                          <span key={idx}>
+                            {idx > 0 && ', '}
+                            {set.reps}
+                            {set.variation && (
+                              <span className="text-primary font-medium ml-0.5">
+                                {set.variation.charAt(0).toLowerCase()}
+                              </span>
+                            )}
+                          </span>
+                        ))}
                       </TableCell>
                       <TableCell className="text-right font-medium">
                         {entry.total}
