@@ -10,12 +10,14 @@ import { Button } from '@/components/ui/button';
 import { LogOut, Dumbbell } from 'lucide-react';
 import { ImportHistory } from './ImportHistory';
 import { VariationStats } from './VariationStats';
+import { CalendarView } from './CalendarView';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export const Dashboard = () => {
   const { user, signOut } = useAuth();
   const {
+    logs,
     todayLogs,
     todayTotal,
     todaySets,
@@ -139,6 +141,9 @@ export const Dashboard = () => {
 
         {/* Variation Stats */}
         <VariationStats stats={variationStats} />
+
+        {/* Calendar View */}
+        <CalendarView logs={logs} />
 
         {/* Progress Chart */}
         <ProgressChart
