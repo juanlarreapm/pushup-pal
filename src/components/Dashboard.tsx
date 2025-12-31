@@ -1,11 +1,10 @@
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { usePushups } from '@/hooks/usePushups';
 import { DailyProgress } from './DailyProgress';
 import { QuickAdd } from './QuickAdd';
 import { TodaySets } from './TodaySets';
 import { StatsCards } from './StatsCards';
-
-import { MotivationalQuote } from './MotivationalQuote';
 import { Button } from '@/components/ui/button';
 import { LogOut, Dumbbell } from 'lucide-react';
 import { ImportHistory } from './ImportHistory';
@@ -13,8 +12,10 @@ import { VariationStats } from './VariationStats';
 import { CalendarView } from './CalendarView';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BottomNav, TabId } from './BottomNav';
 
 export const Dashboard = () => {
+  const [activeTab, setActiveTab] = useState<TabId>('home');
   const { user, signOut } = useAuth();
   const {
     logs,
@@ -83,7 +84,7 @@ export const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-lg mx-auto p-4 pb-8 space-y-6">
+      <div className="max-w-lg mx-auto p-4 pb-24 space-y-6">
         {/* Header */}
         <header className="flex items-center justify-between py-2">
           <div className="flex items-center gap-3">
@@ -110,41 +111,42 @@ export const Dashboard = () => {
           </div>
         </header>
 
-        {/* Daily Progress */}
-        <DailyProgress
-          todayTotal={todayTotal}
-          todaySets={todaySets}
-          streak={streak}
-        />
+        {/* Tab Content */}
+        {activeTab === 'home' && (
+          <>
+            <DailyProgress
+              todayTotal={todayTotal}
+              todaySets={todaySets}
+              streak={streak}
+            />
+            <QuickAdd
+              onAdd={handleAddSet}
+              isLoading={addSet.isPending}
+            />
+            <TodaySets
+              logs={todayLogs}
+              onDelete={handleDeleteSet}
+              isDeleting={deleteSet.isPending}
+            />
+          </>
+        )}
 
-        {/* Quick Add */}
-        <QuickAdd
-          onAdd={handleAddSet}
-          isLoading={addSet.isPending}
-        />
+        {activeTab === 'stats' && (
+          <>
+            <StatsCards
+              lifetimeTotal={lifetimeTotal}
+              records={records}
+            />
+            <VariationStats stats={variationStats} />
+          </>
+        )}
 
-        {/* Today's Sets */}
-        <TodaySets
-          logs={todayLogs}
-          onDelete={handleDeleteSet}
-          isDeleting={deleteSet.isPending}
-        />
-
-        {/* Motivational Quote */}
-        <MotivationalQuote />
-
-        {/* Stats */}
-        <StatsCards
-          lifetimeTotal={lifetimeTotal}
-          records={records}
-        />
-
-        {/* Variation Stats */}
-        <VariationStats stats={variationStats} />
-
-        {/* Calendar View */}
-        <CalendarView logs={logs} />
+        {activeTab === 'calendar' && (
+          <CalendarView logs={logs} />
+        )}
       </div>
+
+      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
 };
