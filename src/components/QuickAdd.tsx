@@ -35,7 +35,7 @@ export const QuickAdd = ({ onAdd, isLoading }: QuickAddProps) => {
       <h3 className="text-sm text-muted-foreground uppercase tracking-wider mb-4">Log a Set</h3>
       
       {/* Variation selector */}
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-hide">
         {VARIATIONS.map(variation => (
           <Button
             key={variation}
@@ -43,7 +43,7 @@ export const QuickAdd = ({ onAdd, isLoading }: QuickAddProps) => {
             size="sm"
             onClick={() => setSelectedVariation(variation)}
             className={cn(
-              "text-xs transition-colors",
+              "text-xs transition-colors shrink-0",
               selectedVariation === variation && "bg-primary text-primary-foreground"
             )}
           >
