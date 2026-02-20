@@ -15,9 +15,10 @@ interface ChartData {
 interface ProgressChartProps {
   weeklyData: ChartData[];
   monthlyData: ChartData[];
+  goal?: number;
 }
 
-export const ProgressChart = ({ weeklyData, monthlyData }: ProgressChartProps) => {
+export const ProgressChart = ({ weeklyData, monthlyData, goal = DAILY_GOAL }: ProgressChartProps) => {
   const [view, setView] = useState<'week' | 'month'>('week');
   const data = view === 'week' ? weeklyData : monthlyData;
 
@@ -83,8 +84,8 @@ export const ProgressChart = ({ weeklyData, monthlyData }: ProgressChartProps) =
             />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted) / 0.5)' }} />
             <ReferenceLine
-              y={DAILY_GOAL}
-              stroke="hsl(var(--muted-foreground))" 
+              y={goal}
+              stroke="hsl(var(--muted-foreground))"
               strokeDasharray="3 3"
               strokeOpacity={0.5}
             />
@@ -99,7 +100,7 @@ export const ProgressChart = ({ weeklyData, monthlyData }: ProgressChartProps) =
       </div>
 
       <p className="text-xs text-muted-foreground text-center mt-2">
-        Dashed line = daily goal ({DAILY_GOAL})
+        Dashed line = daily goal ({goal})
       </p>
     </div>
   );
