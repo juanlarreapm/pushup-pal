@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import type { TooltipProps } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { DAILY_GOAL } from '@/lib/constants';
 
 interface ChartData {
   date: string;
@@ -19,7 +21,7 @@ export const ProgressChart = ({ weeklyData, monthlyData }: ProgressChartProps) =
   const [view, setView] = useState<'week' | 'month'>('week');
   const data = view === 'week' ? weeklyData : monthlyData;
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
       const item = payload[0].payload;
       return (
@@ -80,8 +82,8 @@ export const ProgressChart = ({ weeklyData, monthlyData }: ProgressChartProps) =
               tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
             />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted) / 0.5)' }} />
-            <ReferenceLine 
-              y={100} 
+            <ReferenceLine
+              y={DAILY_GOAL}
               stroke="hsl(var(--muted-foreground))" 
               strokeDasharray="3 3"
               strokeOpacity={0.5}
@@ -97,7 +99,7 @@ export const ProgressChart = ({ weeklyData, monthlyData }: ProgressChartProps) =
       </div>
 
       <p className="text-xs text-muted-foreground text-center mt-2">
-        Dashed line = daily goal (100)
+        Dashed line = daily goal ({DAILY_GOAL})
       </p>
     </div>
   );

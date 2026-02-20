@@ -13,6 +13,7 @@ import { CalendarView } from './CalendarView';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BottomNav, TabId } from './BottomNav';
+import { DAILY_GOAL } from '@/lib/constants';
 
 export const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<TabId>('home');
@@ -39,9 +40,9 @@ export const Dashboard = () => {
       await addSet.mutateAsync({ reps, variation });
       toast({
         title: `+${reps} ${variation !== 'Standard' ? variation + ' ' : ''}pushups!`,
-        description: todayTotal + reps >= 100 && todayTotal < 100 
-          ? "🎉 You've hit your daily goal!" 
-          : `${Math.max(0, 100 - todayTotal - reps)} more to go`,
+        description: todayTotal + reps >= DAILY_GOAL && todayTotal < DAILY_GOAL
+          ? "🎉 You've hit your daily goal!"
+          : `${Math.max(0, DAILY_GOAL - todayTotal - reps)} more to go`,
       });
     } catch (error) {
       toast({

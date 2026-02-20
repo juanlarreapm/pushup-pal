@@ -8,6 +8,7 @@ import { format, startOfDay } from 'date-fns';
 import { CalendarDays, Check, StickyNote, Pencil, Trash2, Save, X } from 'lucide-react';
 import { useDailyNotes } from '@/hooks/useDailyNotes';
 import { toast } from 'sonner';
+import { DAILY_GOAL } from '@/lib/constants';
 
 interface PushupLog {
   id: string;
@@ -51,7 +52,7 @@ export const CalendarView = ({ logs }: CalendarViewProps) => {
   }, [selectedDate, dailyData]);
 
   const selectedDayTotal = selectedDayLogs.reduce((sum, log) => sum + log.reps, 0);
-  const hitGoal = selectedDayTotal >= 100;
+  const hitGoal = selectedDayTotal >= DAILY_GOAL;
 
   // Get note for selected date
   const selectedDayNote = selectedDate ? getNoteForDate(selectedDate) : undefined;
@@ -66,7 +67,7 @@ export const CalendarView = ({ logs }: CalendarViewProps) => {
       const [year, month, day] = dateStr.split('-').map(Number);
       const date = new Date(year, month - 1, day);
       
-      if (data.total >= 100) {
+      if (data.total >= DAILY_GOAL) {
         goalDays.push(date);
       } else if (data.total > 0) {
         activeDays.push(date);
@@ -179,7 +180,7 @@ export const CalendarView = ({ logs }: CalendarViewProps) => {
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {selectedDayLogs.length} set{selectedDayLogs.length !== 1 ? 's' : ''} • 
-                  {hitGoal ? ' Goal reached! 🎉' : ` ${Math.max(0, 100 - selectedDayTotal)} to goal`}
+                  {hitGoal ? ' Goal reached! 🎉' : ` ${Math.max(0, DAILY_GOAL - selectedDayTotal)} to goal`}
                 </p>
               </div>
             )}

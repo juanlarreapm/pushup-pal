@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, endOfDay, subDays, format, eachDayOfInterval, differenceInCalendarDays } from 'date-fns';
+import { DAILY_GOAL } from '@/lib/constants';
 
 interface PushupLog {
   id: string;
@@ -90,8 +91,7 @@ export const usePushups = () => {
   // Calculate streak
   const calculateStreak = (): number => {
     const today = startOfDay(new Date());
-    const DAILY_GOAL = 100;
-    
+
     // Group logs by day
     const dailyTotals: Map<string, number> = new Map();
     logs.forEach(log => {
@@ -146,7 +146,6 @@ export const usePushups = () => {
     const mostInDay = Math.max(...Array.from(dailyTotals.values()));
 
     // Longest streak calculation
-    const DAILY_GOAL = 100;
     const completedDays = Array.from(dailyTotals.entries())
       .filter(([_, total]) => total >= DAILY_GOAL)
       .map(([date, _]) => new Date(date))
@@ -191,7 +190,7 @@ export const usePushups = () => {
         date: format(day, 'EEE'),
         fullDate: format(day, 'MMM d'),
         total,
-        goal: 100,
+        goal: DAILY_GOAL,
       };
     });
   };
@@ -215,7 +214,7 @@ export const usePushups = () => {
         date: format(day, 'd'),
         fullDate: format(day, 'MMM d'),
         total,
-        goal: 100,
+        goal: DAILY_GOAL,
       };
     });
   };
