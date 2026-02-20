@@ -21,6 +21,7 @@
     "noImplicitAny": true,
     "noFallthroughCasesInSwitch": true,
 
+    "types": ["vite-plugin-pwa/client"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
